@@ -1,0 +1,22 @@
+/* You can add global styles to this file, and also import other style files */
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+ 
+.cursor-pointer {
+  cursor: pointer;
+}
+      
+.mat-mdc-row:nth-child(odd) {
+  background-color: rgb(103, 58, 183, 0.1);
+}
+
+.mat-mdc-row {
+  &:hover {
+    background-color: rgb(255, 215, 64, 0.1) !important;
+  }
+}
+
+.mdc-data-table__header-cell {
+  background-color: lightgrey !important;
+}

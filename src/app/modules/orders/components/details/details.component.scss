@@ -1,0 +1,35 @@
+.flex-space-between {
+  display: flex;
+  justify-content: space-between;
+}
+
+.products-header {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.add-icon {
+  margin: 0 !important;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.product-form {
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+  align-items: center;
+}
+
+.btn-section {
+  display: flex;
+  gap: 1rem;
+  position: fixed;
+  bottom: 2rem;
+  right: 3rem;
+}
