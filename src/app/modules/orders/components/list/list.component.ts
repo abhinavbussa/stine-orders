@@ -1,26 +1,37 @@
-import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatTableDataSource } from '@angular/material/table';
-import { Router } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import {
+  AfterViewInit,
+  Component,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from "@angular/core";
+import { MatPaginator } from "@angular/material/paginator";
+import { MatTableDataSource } from "@angular/material/table";
+import { Router } from "@angular/router";
+import { Subject, takeUntil } from "rxjs";
+import { SnackbarService } from "src/app/services/snack-bar.service";
 
-import { Order } from '../../data/data';
-import { OrdersService } from '../../services/orders.service';
+import { Order } from "../../data/data";
+import { OrderService } from "../../services/orders.service";
 
 @Component({
-  selector: 'app-list',
-  templateUrl: './list.component.html',
-  styleUrls: ['./list.component.scss']
+  selector: "app-list",
+  templateUrl: "./list.component.html",
+  styleUrls: ["./list.component.scss"],
 })
 export class ListComponent implements AfterViewInit, OnInit, OnDestroy {
-  displayedColumns: string[] = ['orderId', 'orderTotal', 'customerName'];
-  dataSource: MatTableDataSource<Order>;
-
-  @ViewChild(MatPaginator) paginator: MatPaginator;
+  public displayedColumns: string[] = ["orderId", "orderTotal", "customerName"];
+  public dataSource: MatTableDataSource<Order>;
 
   private _subscriptions = new Subject<void>();
 
-  constructor(private _router: Router, private _service: OrdersService) {}
+  @ViewChild(MatPaginator) paginator: MatPaginator;
+
+  constructor(
+    private _router: Router,
+    private _service: OrderService,
+    private _snackBarService: SnackbarService
+  ) {}
 
   ngOnInit(): void {
     this._getOrders();
@@ -36,22 +47,24 @@ export class ListComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   private _getOrders(): void {
-    this._service.getOrders()
-    .pipe(
-      takeUntil(this._subscriptions)
-    ).subscribe({
-      next: (res) =>{
-        this.dataSource = new MatTableDataSource(res);
-      },
-      error: (err) => {
-        console.error(err)
-      }
-    })
+    this._service
+      .getOrders()
+      .pipe(takeUntil(this._subscriptions))
+      .subscribe({
+        next: (res) => {
+          this.dataSource = new MatTableDataSource(res);
+        },
+        error: (err) => {
+          this._snackBarService.openSnackBar(
+            "Unable to load orders. Please try again later."
+          );
+        },
+      });
   }
 
-  goToDetails(row: Order): void {
-    this._router.navigate(['/orders/details'], { queryParams: { orderId: row?.orderId } })
+  public goToDetails(row: Order): void {
+    this._router.navigate(["/orders/details"], {
+      queryParams: { orderId: row?.orderId },
+    });
   }
 }
-
-
