@@ -52,8 +52,7 @@
                 <div class="form-field">
                     <mat-label>Total Price</mat-label>
                     <mat-form-field appearance="fill">
-                        <input matInput type="number" readonly
-                            [formControl]="getOrderLineFormControl(index, 'totalPrice')">
+                        <input matInput [value]="getOrderLineFormControl(index, 'totalPrice').value | currency">
                     </mat-form-field>
                 </div>
                 <!-- Actions -->
