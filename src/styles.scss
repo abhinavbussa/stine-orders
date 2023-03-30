@@ -1,12 +1,18 @@
 /* You can add global styles to this file, and also import other style files */
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
- 
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
 .cursor-pointer {
   cursor: pointer;
 }
-      
+
 .mat-mdc-row:nth-child(odd) {
   background-color: rgb(103, 58, 183, 0.1);
 }
@@ -19,4 +25,13 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 .mdc-data-table__header-cell {
   background-color: lightgrey !important;
+}
+
+.flex-space-between {
+  display: flex;
+  justify-content: space-between;
+}
+
+.mat-icon {
+  margin: 0 !important;
 }

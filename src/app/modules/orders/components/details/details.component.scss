@@ -1,17 +1,8 @@
-.flex-space-between {
-  display: flex;
-  justify-content: space-between;
-}
-
 .products-header {
   display: flex;
   flex-direction: row;
   gap: 1rem;
   margin: 1rem 0;
-}
-
-.add-icon {
-  margin: 0 !important;
 }
 
 .form-field {

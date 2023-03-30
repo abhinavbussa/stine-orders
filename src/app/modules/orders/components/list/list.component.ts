@@ -62,9 +62,14 @@ export class ListComponent implements AfterViewInit, OnInit, OnDestroy {
       });
   }
 
-  public goToDetails(row: Order): void {
-    this._router.navigate(["/orders/details"], {
-      queryParams: { orderId: row?.orderId },
-    });
+  public goToDetails(row: Order | null, addNew = false): void {
+    if (addNew)
+      this._router.navigate(["/orders/details"], {
+        queryParams: { addNew },
+      });
+    else
+      this._router.navigate(["/orders/details"], {
+        queryParams: { orderId: row?.orderId },
+      });
   }
 }

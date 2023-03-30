@@ -30,11 +30,19 @@ export class OrderService {
     return of(this.customers);
   }
 
-  updateOrder(orderId: string, orderData: Order): Observable<any> {
-    const orderIndex = this.orders.findIndex(
-      (order) => order.orderId === orderId
-    );
-    this.orders.splice(orderIndex, 1, orderData);
+  updateOrder(
+    orderId: string,
+    orderData: Order,
+    isAddNewOrder = false
+  ): Observable<any> {
+    if (isAddNewOrder) {
+      this.orders.push(orderData);
+    } else {
+      const orderIndex = this.orders.findIndex(
+        (order) => order.orderId === orderId
+      );
+      this.orders.splice(orderIndex, 1, orderData);
+    }
     return of({ status: 200 });
   }
 }

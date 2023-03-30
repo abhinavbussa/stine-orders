@@ -1,9 +1,9 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
-import { FormArray, FormBuilder, FormControl, FormGroup } from "@angular/forms";
+import { FormArray, FormControl, FormGroup, Validators } from "@angular/forms";
 import { ActivatedRoute, Router } from "@angular/router";
 import { Subject, takeUntil } from "rxjs";
 import { SnackbarService } from "src/app/services/snack-bar.service";
-import { Order, OrderLine } from "../../data/data";
+import { CUSTOMERS, Order, OrderLine } from "../../data/data";
 import { OrderService } from "../../services/orders.service";
 
 @Component({
@@ -15,14 +15,15 @@ export class DetailsComponent implements OnInit, OnDestroy {
   public orderDetails: Order;
   public customers: any[];
   public products: any[];
-  public orderForm: FormGroup;
   public currentTotal = 0;
   public orderId = "";
+  public isAddNewOrder = false;
+  public customerControl: FormControl;
+  public orderLinesControl: FormControl;
 
   private _subscriptions = new Subject<void>();
 
   constructor(
-    private _fb: FormBuilder,
     private _route: ActivatedRoute,
     private _router: Router,
     private _service: OrderService,
@@ -30,15 +31,17 @@ export class DetailsComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.orderForm = this._fb.group({
-      customer: [],
-      orderLines: this._fb.array([]),
-    });
+    this.customerControl = new FormControl("", [Validators.required]);
+    this.orderLinesControl = new FormControl(new FormArray([]));
     this._route.queryParams.subscribe((params) => {
       this._getCustomers();
       this._getProducts();
-      this._getOrderById(params["orderId"]);
-      this.orderId = params["orderId"];
+      if (params["addNew"]) {
+        this._addNewOrder();
+      } else {
+        this._getOrderById(params["orderId"]);
+        this.orderId = params["orderId"];
+      }
     });
   }
 
@@ -48,7 +51,26 @@ export class DetailsComponent implements OnInit, OnDestroy {
   }
 
   public getOrderLineControls() {
-    return (this.orderForm.get("orderLines") as FormArray).controls;
+    return (this.orderLinesControl.value as FormArray).controls;
+  }
+
+  public getOrderLineFormControl(index: number, control: string) {
+    return (this.orderLinesControl.value as FormArray)
+      .at(index)
+      .get(control) as FormControl;
+  }
+
+  private _addNewOrder(): void {
+    this.isAddNewOrder = true;
+    this.orderDetails = {
+      orderId: `${new Date().toString()}`,
+      lines: [],
+      orderTotal: 0,
+      customerId: 1,
+      customerName: CUSTOMERS[0].name,
+    };
+    this.customerControl.setValue(1);
+    this.addNewProduct();
   }
 
   private _getOrderById(orderId: string): void {
@@ -58,10 +80,10 @@ export class DetailsComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (res) => {
           this.orderDetails = res;
-          this.orderForm = this._fb.group({
-            customer: [this.orderDetails.customerId],
-            orderLines: this._fb.array([]),
-          });
+          this.customerControl = new FormControl(this.orderDetails.customerId, [
+            Validators.required,
+          ]);
+          this.orderLinesControl = new FormControl(new FormArray([]));
           this._getOrderLinesForm(this.orderDetails.lines as OrderLine[]);
         },
         error: (err) => {
@@ -73,19 +95,27 @@ export class DetailsComponent implements OnInit, OnDestroy {
   }
 
   private _getOrderLinesForm(orderLines: OrderLine[]): void {
-    const orderLinesFormArr = this.orderForm.get("orderLines") as FormArray;
+    const orderLinesFormArr = this.orderLinesControl.value as FormArray;
     orderLines.forEach((orderLine: OrderLine) => {
       const product = this.products.filter(
         (product) => product.productId === orderLine.productId
       )[0];
       orderLinesFormArr?.push(
-        this._fb.group({
-          productId: [orderLine.productId],
-          quantity: [orderLine.quantity],
-          totalPrice: [product.price * orderLine.quantity],
+        new FormGroup({
+          productId: new FormControl(orderLine.productId, [
+            Validators.required,
+          ]),
+          quantity: new FormControl(orderLine.quantity, [
+            Validators.required,
+            Validators.min(1),
+          ]),
+          totalPrice: new FormControl(product.price * orderLine.quantity, [
+            Validators.required,
+          ]),
         })
       );
     });
+    this.orderLinesControl.setValue(orderLinesFormArr);
     this._getPriceTotal();
   }
 
@@ -123,14 +153,14 @@ export class DetailsComponent implements OnInit, OnDestroy {
 
   private _getPriceTotal(): void {
     this.currentTotal = 0;
-    const orderLines = this.orderForm.get("orderLines") as FormArray;
+    const orderLines = this.orderLinesControl.value as FormArray;
     for (let formIndex = 0; formIndex < orderLines.length; formIndex++) {
       this.currentTotal += orderLines.at(formIndex).get("totalPrice")?.value;
     }
   }
 
   public updatePrice(index: number): void {
-    const orderLinesFormArr = this.orderForm.get("orderLines") as FormArray;
+    const orderLinesFormArr = this.orderLinesControl.value as FormArray;
     const product = this.products.filter(
       (product) =>
         product.productId ===
@@ -142,11 +172,12 @@ export class DetailsComponent implements OnInit, OnDestroy {
       ?.setValue(
         orderLinesFormArr.at(index).get("quantity")?.value * product.price
       );
+    this.orderLinesControl.setValue(orderLinesFormArr);
     this._getPriceTotal();
   }
 
   public updateProduct(index: number): void {
-    const orderLinesFormArr = this.orderForm.get("orderLines") as FormArray;
+    const orderLinesFormArr = this.orderLinesControl.value as FormArray;
     const product = this.products.filter(
       (product) =>
         product.productId ===
@@ -158,24 +189,26 @@ export class DetailsComponent implements OnInit, OnDestroy {
       ?.setValue(
         orderLinesFormArr.at(index).get("quantity")?.value * product.price
       );
+    this.orderLinesControl.setValue(orderLinesFormArr);
     this._getPriceTotal();
   }
 
   public addNewProduct(): void {
-    const orderLines = this.orderForm.get("orderLines") as FormArray;
+    const orderLines = this.orderLinesControl.value as FormArray;
     orderLines.push(
-      this._fb.group({
-        productId: [1],
-        quantity: [1],
-        totalPrice: [10],
+      new FormGroup({
+        productId: new FormControl(1, [Validators.required]),
+        quantity: new FormControl(1, [Validators.required]),
+        totalPrice: new FormControl(10, [Validators.required]),
       })
     );
+    this.orderLinesControl.setValue(orderLines);
     this._getPriceTotal();
   }
 
   public removeOrderLine(index: number): void {
-    if ((this.orderForm.get("orderLines") as FormArray).length < 2) return;
-    (this.orderForm.get("orderLines") as FormArray).removeAt(index);
+    if ((this.orderLinesControl.value as FormArray).length < 2) return;
+    (this.orderLinesControl.value as FormArray).removeAt(index);
     this._getPriceTotal();
   }
 
@@ -190,21 +223,23 @@ export class DetailsComponent implements OnInit, OnDestroy {
   public submitOrder(): void {
     this._getPriceTotal();
     const customer = this.customers.filter(
-      (customer) =>
-        customer.customerId === this.orderForm.get("customer")?.value
+      (customer) => customer.customerId === this.customerControl?.value
     )[0];
     const orderData = {
       ...this.orderDetails,
-      ...this.orderForm.value,
+      ...customer,
+      lines: this.orderLinesControl.value.value,
       orderTotal: this.currentTotal,
       customerName: customer.name,
     };
-    this._service.updateOrder(this.orderId, orderData).subscribe({
-      next: () => this.goBack(),
-      error: (err) =>
-        this._snackBarService.openSnackBar(
-          "Unable to update order details. Please try again later."
-        ),
-    });
+    this._service
+      .updateOrder(this.orderId, orderData, this.isAddNewOrder)
+      .subscribe({
+        next: () => this.goBack(),
+        error: (err) =>
+          this._snackBarService.openSnackBar(
+            "Unable to update order details. Please try again later."
+          ),
+      });
   }
 }

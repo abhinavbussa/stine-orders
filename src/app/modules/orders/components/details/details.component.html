@@ -1,68 +1,70 @@
 <div>
-  <div class="flex-space-between">
-    <h1>Order ID - {{orderDetails.orderId}}</h1>
-    <button mat-raised-button color="accent" (click)="goBack()">Go Back</button>
-  </div>
-  <!-- Total price -->
-  <div class="form-field">
-    <h4>Total Price - <b>{{currentTotal | currency}}</b></h4>
-  </div>
-  <div>
-    <form [formGroup]="orderForm">
-      <div class="flex-space-between">
-        <!-- customer -->
-        <div class="form-field">
-          <mat-label>Customer</mat-label>
-          <mat-form-field appearance="fill">
-            <mat-select formControlName="customer">
-              <mat-option *ngFor="let customer of customers"
-                [value]="customer.customerId">{{customer.name}}</mat-option>
-            </mat-select>
-          </mat-form-field>
+    <div class="flex-space-between">
+        <h1>Order ID - {{orderDetails.orderId}}</h1>
+        <button mat-raised-button color="accent" (click)="goBack()">Go Back</button>
+    </div>
+    <!-- Total price -->
+    <div class="form-field">
+        <h4>Total Price - <b>{{currentTotal | currency}}</b></h4>
+    </div>
+    <div>
+        <div class="flex-space-between">
+            <!-- customer -->
+            <div class="form-field">
+                <mat-label>Customer</mat-label>
+                <mat-form-field appearance="fill">
+                    <mat-select [formControl]="customerControl">
+                        <mat-option *ngFor="let customer of customers"
+                            [value]="customer.customerId">{{customer.name}}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
         </div>
-      </div>
-      <!-- products -->
-      <div class="products-header">
-        <h2>Products/Order Lines</h2>
-        <button mat-raised-button color="primary" (click)="addNewProduct()">
-          <mat-icon fontIcon="add" class="add-icon"></mat-icon>
-        </button>
-      </div>
-      <div formArrayName="orderLines">
+        <!-- products -->
+        <div class="products-header">
+            <h2>Products/Order Lines</h2>
+            <button mat-raised-button color="primary" (click)="addNewProduct()">
+                <mat-icon fontIcon="add" class="mat-icon"></mat-icon>
+            </button>
+        </div>
         <ng-container *ngFor="let orderLineForm of getOrderLineControls(); let index = index">
-          <div [formGroupName]="index" class="product-form">
-            <!-- product selection -->
-            <div class="form-field">
-              <mat-label>Product</mat-label>
-              <mat-form-field appearance="fill">
-                <mat-select formControlName="productId" (selectionChange)="updateProduct(index)">
-                  <mat-option *ngFor="let product of products" [value]="product.productId">{{product.name}}</mat-option>
-                </mat-select>
-              </mat-form-field>
+            <div class="product-form">
+                <!-- product selection -->
+                <div class="form-field">
+                    <mat-label>Product</mat-label>
+                    <mat-form-field appearance="fill">
+                        <mat-select [formControl]="getOrderLineFormControl(index, 'productId')"
+                            (selectionChange)="updateProduct(index)">
+                            <mat-option *ngFor="let product of products"
+                                [value]="product.productId">{{product.name}}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+                <!-- quantity -->
+                <div class="form-field">
+                    <mat-label>Quantity</mat-label>
+                    <mat-form-field appearance="fill">
+                        <input matInput type="number" (change)="updatePrice(index)"
+                            [formControl]="getOrderLineFormControl(index, 'quantity')">
+                    </mat-form-field>
+                </div>
+                <!-- total price -->
+                <div class="form-field">
+                    <mat-label>Total Price</mat-label>
+                    <mat-form-field appearance="fill">
+                        <input matInput type="number" readonly
+                            [formControl]="getOrderLineFormControl(index, 'totalPrice')">
+                    </mat-form-field>
+                </div>
+                <!-- Actions -->
+                <button mat-raised-button color="warn" (click)="removeOrderLine(index)">
+                    <mat-icon fontIcon="delete" class="mat-icon"></mat-icon>
+                </button>
             </div>
-            <!-- quantity -->
-            <div class="form-field">
-              <mat-label>Quantity</mat-label>
-              <mat-form-field appearance="fill">
-                <input matInput type="number" (change)="updatePrice(index)" formControlName="quantity">
-              </mat-form-field>
-            </div>
-            <!-- total price -->
-            <div class="form-field">
-              <mat-label>Total Price</mat-label>
-              <mat-form-field appearance="fill">
-                <input matInput type="number" readonly formControlName="totalPrice">
-              </mat-form-field>
-            </div>
-            <!-- Actions -->
-            <button mat-raised-button color="warn" (click)="removeOrderLine(index)">Remove</button>
-          </div>
         </ng-container>
-      </div>
-      <div class="btn-section">
-        <button mat-raised-button color="accent" (click)="resetDetails()">Cancel</button>
-        <button mat-raised-button color="primary" (click)="submitOrder()">Submit</button>
-      </div>
-    </form>
-  </div>
+        <div class="btn-section">
+            <button mat-raised-button color="accent" (click)="resetDetails()">Cancel</button>
+            <button mat-raised-button color="primary" (click)="submitOrder()">Submit</button>
+        </div>
+    </div>
 </div>
