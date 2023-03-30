@@ -63,7 +63,7 @@ export class DetailsComponent implements OnInit, OnDestroy {
   private _addNewOrder(): void {
     this.isAddNewOrder = true;
     this.orderDetails = {
-      orderId: `${new Date().toString()}`,
+      orderId: `${Date.now()}`,
       lines: [],
       orderTotal: 0,
       customerId: 1,
